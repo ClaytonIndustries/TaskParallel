@@ -8,11 +8,6 @@ namespace CI.TaskParallel
 {
     public class UnityTask
     {
-        public bool Success
-        {
-            get; set;
-        }
-
         protected Thread _thread;
         protected ThreadStart _threadStart;
         protected UnityTask _continuation;
@@ -79,19 +74,6 @@ namespace CI.TaskParallel
             };
 
             RunOnUIThread(wrapper);
-        }
-
-        public static UnityTask Delay(int milliseconds)
-        {
-            Action wrapper = () =>
-            {
-                Thread.Sleep(milliseconds);
-            };
-
-            UnityTask unityTask = new UnityTask(wrapper);
-            unityTask.Start();
-
-            return unityTask;
         }
 
         public static UnityTask Run(Action action)
