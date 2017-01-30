@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets
+namespace CI.TaskParallel.Core
 {
     public class UnityDispatcher : MonoBehaviour
     {

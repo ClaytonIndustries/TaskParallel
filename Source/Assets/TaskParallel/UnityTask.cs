@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using CI.TaskParallel.Core;
 
-namespace Assets
+namespace CI.TaskParallel
 {
     public class UnityTask
     {
@@ -78,6 +79,19 @@ namespace Assets
             };
 
             RunOnUIThread(wrapper);
+        }
+
+        public static UnityTask Delay(int milliseconds)
+        {
+            Action wrapper = () =>
+            {
+                Thread.Sleep(milliseconds);
+            };
+
+            UnityTask unityTask = new UnityTask(wrapper);
+            unityTask.Start();
+
+            return unityTask;
         }
 
         public static UnityTask Run(Action action)
