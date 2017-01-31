@@ -6,6 +6,9 @@ using CI.TaskParallel.Core;
 
 namespace CI.TaskParallel
 {
+    /// <summary>
+    /// Represents an asynchronous operation
+    /// </summary>
     public class UnityTask
     {
         protected Thread _thread;
@@ -14,6 +17,10 @@ namespace CI.TaskParallel
 
         private static UnityDispatcher _dispatcher;
 
+        /// <summary>
+        /// Initialises a new UnityTask with the specified action
+        /// </summary>
+        /// <param name="action">The delegate that represents the code to execute in the UnityTask</param>
         public UnityTask(Action action)
         {
             Initialise(action);
@@ -38,21 +45,35 @@ namespace CI.TaskParallel
             _thread = new Thread(_threadStart);
         }
 
+        /// <summary>
+        /// Starts this UnityTask
+        /// </summary>
         public void Start()
         {
             _thread.Start();
         }
 
+        /// <summary>
+        /// Aborts this UnityTask - will throw a ThreadAbortedException
+        /// </summary>
         public void Abort()
         {
             _thread.Abort();
         }
 
+        /// <summary>
+        /// Waits for this UnityTask to complete
+        /// </summary>
         public void Wait()
         {
             _thread.Join();
         }
 
+        /// <summary>
+        /// Creates a continuation that executes asynchronously when the target UnityTask completes
+        /// </summary>
+        /// <param name="action">An action to run when the UnityTask completes. When run, the delegate will be passed the completed UnityTask as an argument</param>
+        /// <returns>A new continuation UnityTask</returns>
         public UnityTask ContinueWith(Action<UnityTask> action)
         {
             Action wrapper = () =>
@@ -66,6 +87,29 @@ namespace CI.TaskParallel
             return continuation;
         }
 
+        /// <summary>
+        /// Creates a continuation that executes asynchronously when the target UnityTask completes
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result produced by the continuation</typeparam>
+        /// <param name="function">A function to run when the UnityTask completes. When run, the delegate will be passed the completed UnityTask as an argument</param>
+        /// <returns>A new continuation UnityTask</returns>
+        public UnityTask<TResult> ContinueWith<TResult>(Func<UnityTask, TResult> function)
+        {
+            Func<TResult> wrapperAction = () =>
+            {
+                return function(this);
+            };
+
+            UnityTask<TResult> continuation = new UnityTask<TResult>(wrapperAction);
+            _continuation = continuation;
+
+            return continuation;
+        }
+
+        /// <summary>
+        /// Creates a continuation that executes synchronously on the UI thread when the target UnityTask completes
+        /// </summary>
+        /// <param name="action">An action to run when the UnityTask completes. When run, the delegate will be passed the completed UnityTask as an argument</param>
         public void ContinueOnUIThread(Action<UnityTask> action)
         {
             Action wrapper = () =>
@@ -76,6 +120,11 @@ namespace CI.TaskParallel
             RunOnUIThread(wrapper);
         }
 
+        /// <summary>
+        /// Runs the specified work on a new thread and returns a UnityTask object that represents the work
+        /// </summary>
+        /// <param name="action">The work to execute asynchronously</param>
+        /// <returns>A UnityTask object that represents the work to be run on a new thread</returns>
         public static UnityTask Run(Action action)
         {
             UnityTask unityTask = new UnityTask(action);
@@ -84,6 +133,12 @@ namespace CI.TaskParallel
             return unityTask;
         }
 
+        /// <summary>
+        /// Runs the specified work on a new thread and returns a UnityTask object that represents the work
+        /// </summary>
+        /// <typeparam name="TResult">The return type of the UnityTask</typeparam>
+        /// <param name="action">The work to execute asynchronously</param>
+        /// <returns>A UnityTask object that represents the work to be run on a new thread</returns>
         public static UnityTask<TResult> Run<TResult>(Func<TResult> action)
         {
             UnityTask<TResult> unityTask = new UnityTask<TResult>(action);
@@ -92,11 +147,18 @@ namespace CI.TaskParallel
             return unityTask;
         }
 
+        /// <summary>
+        /// Queues the specified work to run on the UI thread
+        /// </summary>
+        /// <param name="action">The work to execute synchronously on the UI thread</param>
         public static void RunOnUIThread(Action action)
         {
             _dispatcher.Enqueue(action);
         }
 
+        /// <summary>
+        /// Initialises the UI dispatcher - this must be called before any work is queued to the UI thread
+        /// </summary>
         public static void InitialiseDispatcher()
         {
             if (_dispatcher == null)
@@ -105,6 +167,10 @@ namespace CI.TaskParallel
             }
         }
 
+        /// <summary>
+        /// Waits for all of the provided UnityTask objects to complete execution
+        /// </summary>
+        /// <param name="unityTasks">The UnityTasks to wait on for completion</param>
         public static void WaitAll(params UnityTask[] unityTasks)
         {
             foreach(UnityTask unityTask in unityTasks)
@@ -113,6 +179,10 @@ namespace CI.TaskParallel
             }
         }
 
+        /// <summary>
+        /// Waits for all of the provided UnityTask objects to complete execution
+        /// </summary>
+        /// <param name="unityTasks">The UnityTasks to wait on for completion</param>
         public static void WaitAll(IEnumerable<UnityTask> unityTasks)
         {
             foreach (UnityTask unityTask in unityTasks)
@@ -122,23 +192,40 @@ namespace CI.TaskParallel
         }
     }
 
+    /// <summary>
+    /// Represents an asynchronous operation that can return a value
+    /// </summary>
+    /// <typeparam name="TResult">The type of the result produced by this UnityTask</typeparam>
     public class UnityTask<TResult> : UnityTask
     {
+        /// <summary>
+        /// Gets the result value of this UnityTask
+        /// </summary>
         public TResult Result
         {
             get; set;
         }
 
-        public UnityTask(Func<TResult> action)
+        /// <summary>
+        /// Initialises a new UnityTask with the specified function
+        /// </summary>
+        /// <param name="function">The delegate that represents the code to execute in the UnityTask. When the function has completed, 
+        /// the UnityTask's Result property will be set to return the result value of the function</param>
+        public UnityTask(Func<TResult> function)
         {
             Action wrapperAction = () =>
             {
-                Result = action();
+                Result = function();
             };
 
             Initialise(wrapperAction);
         }
 
+        /// <summary>
+        /// Creates a continuation that executes asynchronously when the target UnityTask completes
+        /// </summary>
+        /// <param name="action">An action to run when the UnityTask completes. When run, the delegate will be passed the completed UnityTask as an argument</param>
+        /// <returns>A new continuation UnityTask</returns>
         public UnityTask ContinueWith(Action<UnityTask<TResult>> action)
         {
             Action wrapper = () =>
@@ -152,11 +239,17 @@ namespace CI.TaskParallel
             return continuation;
         }
 
-        public UnityTask<NewTResult> ContinueWith<NewTResult>(Func<UnityTask<TResult>, NewTResult> action)
+        /// <summary>
+        /// Creates a continuation that executes asynchronously when the target UnityTask completes
+        /// </summary>
+        /// <typeparam name="NewTResult">The type of the result produced by the continuation</typeparam>
+        /// <param name="function">A function to run when the UnityTask completes. When run, the delegate will be passed the completed UnityTask as an argument</param>
+        /// <returns>A new continuation UnityTask</returns>
+        public UnityTask<NewTResult> ContinueWith<NewTResult>(Func<UnityTask<TResult>, NewTResult> function)
         {
             Func<NewTResult> wrapperAction = () =>
             {
-                return action(this);
+                return function(this);
             };
 
             UnityTask<NewTResult> continuation = new UnityTask<NewTResult>(wrapperAction);
@@ -165,6 +258,10 @@ namespace CI.TaskParallel
             return continuation;
         }
 
+        /// <summary>
+        /// Creates a continuation that executes synchronously on the UI thread when the target UnityTask completes
+        /// </summary>
+        /// <param name="action">The work to execute synchronously on the UI thread</param>
         public void ContinueOnUIThread(Action<UnityTask<TResult>> action)
         {
             Action wrapper = () =>
