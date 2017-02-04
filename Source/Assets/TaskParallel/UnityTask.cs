@@ -12,7 +12,7 @@ namespace CI.TaskParallel
     {
         public UnityTaskState State
         {
-            get; private set;
+            get; protected set;
         }
 
         protected UnityThread _thread;
@@ -26,7 +26,19 @@ namespace CI.TaskParallel
         /// <param name="action">The delegate that represents the code to execute in the UnityTask</param>
         public UnityTask(Action action)
         {
-            Initialise(action);
+            Action wrapperAction = () =>
+            {
+                try
+                {
+                    action();
+                }
+                catch
+                {
+                    State = UnityTaskState.Faulted;
+                }
+            };
+
+            Initialise(wrapperAction);
         }
 
         protected UnityTask()
@@ -37,7 +49,10 @@ namespace CI.TaskParallel
         {
             action += () =>
             {
-                State = UnityTaskState.Finished;
+                if (State != UnityTaskState.Faulted)
+                {
+                    State = UnityTaskState.Finished;
+                }
 
                 if (_continuation != null)
                 {
@@ -96,7 +111,16 @@ namespace CI.TaskParallel
         {
             Action wrapper = () =>
             {
-                action(this);
+                try
+                {
+                    action(this);
+                }
+                catch
+                {
+                    State = UnityTaskState.Faulted;
+
+                    throw;
+                }
             };
 
             UnityTask continuation = new UnityTask(wrapper);
@@ -113,12 +137,12 @@ namespace CI.TaskParallel
         /// <returns>A new continuation UnityTask</returns>
         public UnityTask<TResult> ContinueWith<TResult>(Func<UnityTask, TResult> function)
         {
-            Func<TResult> wrapperAction = () =>
+            Func<TResult> wrapperFunc = () =>
             {
                 return function(this);
             };
 
-            UnityTask<TResult> continuation = new UnityTask<TResult>(wrapperAction);
+            UnityTask<TResult> continuation = new UnityTask<TResult>(wrapperFunc);
             _continuation = continuation;
 
             return continuation;
@@ -233,7 +257,14 @@ namespace CI.TaskParallel
         {
             Action wrapperAction = () =>
             {
-                Result = function();
+                try
+                {
+                    Result = function();
+                }
+                catch
+                {
+                    State = UnityTaskState.Faulted;
+                }
             };
 
             Initialise(wrapperAction);
@@ -265,12 +296,12 @@ namespace CI.TaskParallel
         /// <returns>A new continuation UnityTask</returns>
         public UnityTask<NewTResult> ContinueWith<NewTResult>(Func<UnityTask<TResult>, NewTResult> function)
         {
-            Func<NewTResult> wrapperAction = () =>
+            Func<NewTResult> wrapperFunc = () =>
             {
                 return function(this);
             };
 
-            UnityTask<NewTResult> continuation = new UnityTask<NewTResult>(wrapperAction);
+            UnityTask<NewTResult> continuation = new UnityTask<NewTResult>(wrapperFunc);
             _continuation = continuation;
 
             return continuation;

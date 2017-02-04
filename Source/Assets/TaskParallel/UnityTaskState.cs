@@ -6,6 +6,7 @@ namespace CI.TaskParallel
         Created,
         Running,
         Finished,
-        Aborted
+        Aborted,
+        Faulted
     }
 }
