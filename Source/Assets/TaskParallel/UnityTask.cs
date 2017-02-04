@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 using CI.TaskParallel.Core;
 
@@ -11,8 +10,12 @@ namespace CI.TaskParallel
     /// </summary>
     public class UnityTask
     {
-        protected Thread _thread;
-        protected ThreadStart _threadStart;
+        public UnityTaskState State
+        {
+            get; private set;
+        }
+
+        protected UnityThread _thread;
         protected UnityTask _continuation;
 
         private static UnityDispatcher _dispatcher;
@@ -32,17 +35,19 @@ namespace CI.TaskParallel
 
         protected void Initialise(Action action)
         {
-            _threadStart = new ThreadStart(action);
-
-            _threadStart += () =>
+            action += () =>
             {
+                State = UnityTaskState.Finished;
+
                 if (_continuation != null)
                 {
                     _continuation.Start();
                 }
             };
 
-            _thread = new Thread(_threadStart);
+            _thread = new UnityThread(action);
+
+            State = UnityTaskState.Created;
         }
 
         /// <summary>
@@ -50,7 +55,12 @@ namespace CI.TaskParallel
         /// </summary>
         public void Start()
         {
-            _thread.Start();
+            if (State == UnityTaskState.Created)
+            {
+                _thread.Start();
+
+                State = UnityTaskState.Running;
+            }
         }
 
         /// <summary>
@@ -58,7 +68,12 @@ namespace CI.TaskParallel
         /// </summary>
         public void Abort()
         {
-            _thread.Abort();
+            if (State == UnityTaskState.Running)
+            {
+                _thread.Abort();
+
+                State = UnityTaskState.Aborted;
+            }
         }
 
         /// <summary>
@@ -66,7 +81,10 @@ namespace CI.TaskParallel
         /// </summary>
         public void Wait()
         {
-            _thread.Join();
+            if (State == UnityTaskState.Running)
+            {
+                _thread.Join();
+            }
         }
 
         /// <summary>
