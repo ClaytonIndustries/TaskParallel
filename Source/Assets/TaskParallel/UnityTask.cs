@@ -8,7 +8,7 @@ namespace CI.TaskParallel
     /// <summary>
     /// Represents an asynchronous operation
     /// </summary>
-    public class UnityTask
+    public class UnityTask : IUnityTask
     {
         public UnityTaskState State
         {
@@ -16,7 +16,7 @@ namespace CI.TaskParallel
         }
 
         protected UnityThread _thread;
-        protected UnityTask _continuation;
+        protected IUnityTask _continuation;
 
         private static UnityDispatcher _dispatcher;
 
@@ -159,7 +159,7 @@ namespace CI.TaskParallel
                 action(this);
             };
 
-            RunOnUIThread(wrapper);
+            _continuation = new UnityUITask(wrapper);
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace CI.TaskParallel
                 action(this);
             };
 
-            RunOnUIThread(wrapper);
+            _continuation = new UnityUITask(wrapper);
         }
     }
 }
