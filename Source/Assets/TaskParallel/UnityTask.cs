@@ -100,6 +100,10 @@ namespace CI.TaskParallel
             {
                 _thread.Join();
             }
+            else
+            {
+
+            }
         }
 
         /// <summary>
