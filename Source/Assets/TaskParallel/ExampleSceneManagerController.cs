@@ -38,7 +38,7 @@ public class ExampleSceneManagerController : MonoBehaviour
             return FindPrimeNumber(10000);
         }).ContinueOnUIThread((r) =>
         {
-            ResultText.text = r.Result.ToString();
+            ResultText.text = "The result is: " + r.Result.ToString();
         });
     }
 
