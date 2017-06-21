@@ -72,9 +72,9 @@ namespace CI.TaskParallel
         {
             if (State == UnityTaskState.Created)
             {
-                _thread.Start();
-
                 State = UnityTaskState.Running;
+
+                _thread.Start();
             }
         }
 
