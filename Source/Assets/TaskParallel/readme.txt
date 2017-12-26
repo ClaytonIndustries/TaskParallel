@@ -1,4 +1,4 @@
-﻿Task Parallel (v1.01)
+﻿Task Parallel (v1.02)
 ----------------------------
 
 Thank you for downloading Task Parallel we hope you enjoy using it!
@@ -11,14 +11,7 @@ Support Website: http://www.claytoninds.com/
 Support Email: clayton.inds+support@gmail.com
 
 ------------------------------------------------------------------------------------------------------------------------
-
-Methods:
-Task.Start
-Task.Abort
-Task.Wait
-Task.ContinueWith
-Task.ContinueOnUIThread
-Task.Run
-Task.RunOnUIThread
-Task.InitialiseDispatcher
-Task.WaitAll
+Why not check out our other plugins:
+- Http Client (Http requests made easy)
+- Quick Save (Saving made easy)
+- Windows Store Native (Windows UWP integration made easy)
