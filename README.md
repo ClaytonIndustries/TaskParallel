@@ -1,4 +1,3 @@
-
 # Task Parallel
 
 Task Parallel is a plugin that makes it easy to create and manage threads in Unity games
@@ -13,4 +12,4 @@ Task Parallel is a plugin that makes it easy to create and manage threads in Uni
  
 ## Documentation
 
-Available [here](https://www.claytoninds.com/#taskparallel)
+Available [here](https://github.com/ClaytonIndustries/TaskParallel/wiki)
