@@ -49,12 +49,12 @@ namespace CI.TaskParallel
         {
             action += () =>
             {
-                if (State != UnityTaskState.Faulted)
+                if (State != UnityTaskState.Aborted && State != UnityTaskState.Faulted)
                 {
                     State = UnityTaskState.Finished;
                 }
 
-                if (_continuation != null)
+                if (_continuation != null && State != UnityTaskState.Aborted)
                 {
                     _continuation.Start();
                 }
