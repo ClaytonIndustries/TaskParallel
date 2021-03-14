@@ -4,7 +4,7 @@ namespace CI.TaskParallel.Core
 {
     public class UnityUITask : IUnityTask
     {
-        private Action _action;
+        private readonly Action _action;
 
         public UnityUITask(Action action)
         {

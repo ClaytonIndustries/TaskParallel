@@ -215,10 +215,7 @@ namespace CI.TaskParallel
         /// <param name="unityTasks">The UnityTasks to wait on for completion</param>
         public static void WaitAll(params UnityTask[] unityTasks)
         {
-            foreach(UnityTask unityTask in unityTasks)
-            {
-                unityTask.Wait();
-            }
+            WaitOnTasks(unityTasks);
         }
 
         /// <summary>
@@ -227,7 +224,42 @@ namespace CI.TaskParallel
         /// <param name="unityTasks">The UnityTasks to wait on for completion</param>
         public static void WaitAll(IEnumerable<UnityTask> unityTasks)
         {
-            foreach (UnityTask unityTask in unityTasks)
+            WaitOnTasks(unityTasks);
+        }
+
+        /// <summary>
+        /// Executes the specified callback on the UI thread when all the provided UnityTask objects have completed execution
+        /// </summary>
+        /// <param name="callback">The callback to be executed</param>
+        /// <param name="unityTasks">The UnityTasks to monitor for completion</param>
+        public static void WhenAll(Action callback, params UnityTask[] unityTasks)
+        {
+            Run(() =>
+            {
+                WaitOnTasks(unityTasks);
+
+                RunOnUIThread(callback);
+            });
+        }
+
+        /// <summary>
+        /// Executes the specified callback on the UI thread when all the provided UnityTask objects have completed execution
+        /// </summary>
+        /// <param name="callback">The callback to be executed</param>
+        /// <param name="unityTasks">The UnityTasks to monitor for completion</param>
+        public static void WhenAll(Action callback, IEnumerable<UnityTask> unityTasks)
+        {
+            Run(() =>
+            {
+                WaitOnTasks(unityTasks);
+
+                RunOnUIThread(callback);
+            });
+        }
+
+        private static void WaitOnTasks(IEnumerable<UnityTask> unityTasks)
+        {
+            foreach (var unityTask in unityTasks)
             {
                 unityTask.Wait();
             }
