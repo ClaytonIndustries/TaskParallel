@@ -6,11 +6,6 @@ public class ExampleSceneManagerController : MonoBehaviour
 {
     public Text ResultText;
 
-    public void Start()
-    {
-        UnityTask.InitialiseDispatcher();
-    }
-
     public void CreateAndRun()
     {
         UnityTask.Run(() =>
