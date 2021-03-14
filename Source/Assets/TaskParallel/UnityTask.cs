@@ -10,6 +10,8 @@ namespace CI.TaskParallel
     /// </summary>
     public class UnityTask : IUnityTask
     {
+        private const string DISPATCHER_GAMEOBJECT_NAME = "TaskParallelDispatcher";
+
         public UnityTaskState State
         {
             get; protected set;
@@ -18,7 +20,7 @@ namespace CI.TaskParallel
         protected UnityThread _thread;
         protected IUnityTask _continuation;
 
-        private static UnityDispatcher _dispatcher;
+        private static Dispatcher _dispatcher;
 
         /// <summary>
         /// Initialises a new UnityTask with the specified action
@@ -70,6 +72,8 @@ namespace CI.TaskParallel
         /// </summary>
         public void Start()
         {
+            CreateDispatcherGameObject();
+
             if (State == UnityTaskState.Created)
             {
                 State = UnityTaskState.Running;
@@ -123,7 +127,7 @@ namespace CI.TaskParallel
                 }
             };
 
-            UnityTask continuation = new UnityTask(wrapper);
+            var continuation = new UnityTask(wrapper);
             _continuation = continuation;
 
             return continuation;
@@ -142,7 +146,7 @@ namespace CI.TaskParallel
                 return function(this);
             };
 
-            UnityTask<TResult> continuation = new UnityTask<TResult>(wrapperFunc);
+            var continuation = new UnityTask<TResult>(wrapperFunc);
             _continuation = continuation;
 
             return continuation;
@@ -169,7 +173,7 @@ namespace CI.TaskParallel
         /// <returns>A UnityTask object that represents the work to be run on a new thread</returns>
         public static UnityTask Run(Action action)
         {
-            UnityTask unityTask = new UnityTask(action);
+            var unityTask = new UnityTask(action);
             unityTask.Start();
 
             return unityTask;
@@ -183,7 +187,7 @@ namespace CI.TaskParallel
         /// <returns>A UnityTask object that represents the work to be run on a new thread</returns>
         public static UnityTask<TResult> Run<TResult>(Func<TResult> action)
         {
-            UnityTask<TResult> unityTask = new UnityTask<TResult>(action);
+            var unityTask = new UnityTask<TResult>(action);
             unityTask.Start();
 
             return unityTask;
@@ -195,18 +199,9 @@ namespace CI.TaskParallel
         /// <param name="action">The work to execute synchronously on the UI thread</param>
         public static void RunOnUIThread(Action action)
         {
-            _dispatcher.Enqueue(action);
-        }
+            CreateDispatcherGameObject();
 
-        /// <summary>
-        /// Initialises the UI dispatcher - this must be called before any work is queued to the UI thread
-        /// </summary>
-        public static void InitialiseDispatcher()
-        {
-            if (_dispatcher == null)
-            {
-                _dispatcher = new GameObject("UIDispatcher").AddComponent<UnityDispatcher>();
-            }
+            _dispatcher.Enqueue(action);
         }
 
         /// <summary>
@@ -264,6 +259,14 @@ namespace CI.TaskParallel
                 unityTask.Wait();
             }
         }
+
+        private static void CreateDispatcherGameObject()
+        {
+            if (_dispatcher == null)
+            {
+                _dispatcher = new GameObject(DISPATCHER_GAMEOBJECT_NAME).AddComponent<Dispatcher>();
+            }
+        }
     }
 
     /// <summary>
@@ -314,7 +317,7 @@ namespace CI.TaskParallel
                 action(this);
             };
 
-            UnityTask continuation = new UnityTask(wrapper);
+            var continuation = new UnityTask(wrapper);
             _continuation = continuation;
 
             return continuation;
@@ -333,7 +336,7 @@ namespace CI.TaskParallel
                 return function(this);
             };
 
-            UnityTask<NewTResult> continuation = new UnityTask<NewTResult>(wrapperFunc);
+            var continuation = new UnityTask<NewTResult>(wrapperFunc);
             _continuation = continuation;
 
             return continuation;

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CI.TaskParallel.Core
 {
-    public class UnityDispatcher : MonoBehaviour
+    public class Dispatcher : MonoBehaviour
     {
         private readonly Queue<Action> _queue = new Queue<Action>();
         private readonly object _lock = new object();
