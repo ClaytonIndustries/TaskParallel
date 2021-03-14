@@ -1,4 +1,4 @@
-﻿Task Parallel (v1.04)
+﻿Task Parallel (v2.0)
 ----------------------------
 
 Thank you for downloading Task Parallel we hope you enjoy using it!
