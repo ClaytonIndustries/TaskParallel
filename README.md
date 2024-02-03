@@ -12,4 +12,4 @@ Task Parallel is a plugin that makes it easy to create and manage threads in Uni
  
 ## Documentation
 
-Available [here](https://github.com/ClaytonIndustries/TaskParallel/wiki)
+Available [here](https://www.claytoninds.com/task-parallel/docs/home)
